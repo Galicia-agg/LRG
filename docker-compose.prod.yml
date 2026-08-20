@@ -1,0 +1,60 @@
+name: aceitera-taller-prod
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: aceitera-taller:latest
+    restart: unless-stopped
+    env_file:
+      - .env.production
+    ports:
+      - "${APP_PORT:-8090}:80"
+    depends_on:
+      pgsql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - aceitera
+
+  pgsql:
+    image: postgres:18-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${DB_DATABASE:-aceitera}
+      POSTGRES_USER: ${DB_USERNAME:-aceitera}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-change-me}
+    volumes:
+      - aceitera-pgsql:/var/lib/postgresql
+    networks:
+      - aceitera
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME:-aceitera} -d ${DB_DATABASE:-aceitera}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:alpine
+    restart: unless-stopped
+    volumes:
+      - aceitera-redis:/data
+    networks:
+      - aceitera
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+networks:
+  aceitera:
+    driver: bridge
+
+volumes:
+  aceitera-pgsql:
+    driver: local
+  aceitera-redis:
+    driver: local
