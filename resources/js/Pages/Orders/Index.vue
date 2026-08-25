@@ -30,6 +30,16 @@ const statusLabels = {
     cancelled: { text: 'Cancelado', tone: 'slate' },
 };
 
+const deliveryStatusLabels = {
+    pendiente: { text: 'Pendiente', tone: 'slate' },
+    en_camino: { text: 'En camino', tone: 'amber' },
+    entregado: { text: 'Entregado', tone: 'green' },
+};
+
+function updateDeliveryStatus(order, deliveryStatus) {
+    router.patch(route('orders.delivery-status', order.id), { delivery_status: deliveryStatus }, { preserveScroll: true });
+}
+
 function filterBy(value) {
     router.get(route('orders.index'), value ? { status: value } : {}, { preserveState: true, replace: true });
 }
@@ -104,6 +114,7 @@ function completeOrder(order) {
                                 <th class="px-6 py-3">Fecha</th>
                                 <th class="px-6 py-3">Cliente</th>
                                 <th class="px-6 py-3">Teléfono</th>
+                                <th class="px-6 py-3">Entrega</th>
                                 <th class="px-6 py-3">Total</th>
                                 <th class="px-6 py-3">Estado</th>
                                 <th class="px-6 py-3"></th>
@@ -126,6 +137,19 @@ function completeOrder(order) {
                                     </td>
                                     <td class="px-6 py-3 font-medium text-slate-900">{{ order.customer_name }}</td>
                                     <td class="px-6 py-3">{{ order.customer_phone }}</td>
+                                    <td class="px-6 py-3">
+                                        <div class="flex flex-col gap-1">
+                                            <Badge :tone="order.delivery_type === 'domicilio' ? 'primary' : 'slate'">
+                                                {{ order.delivery_type === 'domicilio' ? 'A domicilio' : 'Recoger en tienda' }}
+                                            </Badge>
+                                            <Badge
+                                                v-if="order.delivery_type === 'domicilio' && order.delivery_status"
+                                                :tone="deliveryStatusLabels[order.delivery_status]?.tone ?? 'slate'"
+                                            >
+                                                {{ deliveryStatusLabels[order.delivery_status]?.text ?? order.delivery_status }}
+                                            </Badge>
+                                        </div>
+                                    </td>
                                     <td class="px-6 py-3 font-medium text-slate-900">Q {{ order.total }}</td>
                                     <td class="px-6 py-3">
                                         <Badge :tone="statusLabels[order.status]?.tone ?? 'slate'">
@@ -168,7 +192,7 @@ function completeOrder(order) {
                                     </td>
                                 </tr>
                                 <tr v-if="expandedId === order.id" class="bg-slate-50/60">
-                                    <td colspan="7" class="px-6 py-4">
+                                    <td colspan="8" class="px-6 py-4">
                                         <table class="w-full max-w-lg text-xs text-slate-600">
                                             <tr v-for="item in order.items" :key="item.id">
                                                 <td class="py-1 pr-4">{{ item.product?.name ?? '—' }}</td>
@@ -179,6 +203,26 @@ function completeOrder(order) {
                                         <p v-if="order.customer_address" class="mt-2 text-xs text-slate-500">
                                             Dirección: {{ order.customer_address }}
                                         </p>
+                                        <div
+                                            v-if="order.delivery_type === 'domicilio' && order.status !== 'cancelled' && order.status !== 'completed'"
+                                            class="mt-2 flex items-center gap-2"
+                                        >
+                                            <span class="text-xs text-slate-500">Estado de entrega:</span>
+                                            <button
+                                                v-for="option in ['pendiente', 'en_camino', 'entregado']"
+                                                :key="option"
+                                                type="button"
+                                                @click="updateDeliveryStatus(order, option)"
+                                                class="rounded-full border px-2 py-0.5 text-xs font-medium transition"
+                                                :class="
+                                                    order.delivery_status === option
+                                                        ? 'border-primary-600 bg-primary-600 text-white'
+                                                        : 'border-slate-200 text-slate-600 hover:border-primary-400 hover:text-primary-700'
+                                                "
+                                            >
+                                                {{ deliveryStatusLabels[option].text }}
+                                            </button>
+                                        </div>
                                         <p v-if="order.customer_email" class="mt-1 text-xs text-slate-500">
                                             Email: {{ order.customer_email }}
                                         </p>
@@ -193,7 +237,7 @@ function completeOrder(order) {
                             </template>
 
                             <tr v-if="orders.length === 0">
-                                <td colspan="7" class="px-6 py-10 text-center text-slate-500">
+                                <td colspan="8" class="px-6 py-10 text-center text-slate-500">
                                     No hay pedidos en este filtro.
                                 </td>
                             </tr>

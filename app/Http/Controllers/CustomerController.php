@@ -25,9 +25,11 @@ class CustomerController extends Controller
 
     public function store(StoreCustomerRequest $request): RedirectResponse
     {
-        $this->customers->create($request->validated());
+        $customer = $this->customers->create($request->validated());
 
-        return redirect()->route('customers.index')->with('success', 'Cliente creado correctamente.');
+        return back()
+            ->with('success', 'Cliente creado correctamente.')
+            ->with('customerId', $customer->id);
     }
 
     public function update(StoreCustomerRequest $request, Customer $customer): RedirectResponse

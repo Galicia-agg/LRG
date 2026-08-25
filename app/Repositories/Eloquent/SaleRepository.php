@@ -48,7 +48,7 @@ class SaleRepository extends BaseRepository implements SaleRepositoryInterface
     {
         return $this->model->newQuery()
             ->whereBetween('sold_at', [$from->copy()->startOfDay(), $to->copy()->endOfDay()])
-            ->with(['items.product', 'payments', 'customer', 'user'])
+            ->with(['items.product', 'payments', 'customer', 'user', 'order', 'workOrder'])
             ->latest('sold_at')
             ->get();
     }

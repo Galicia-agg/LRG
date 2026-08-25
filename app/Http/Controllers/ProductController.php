@@ -77,9 +77,14 @@ class ProductController extends Controller
 
     public function edit(Product $product): Response
     {
+        $product->load(['images', 'compatibilities', 'specifications']);
+
+        $productData = $product->toArray();
+        $productData['expiration_date'] = $product->expiration_date?->toDateString();
+
         return Inertia::render('Products/Form', [
             'categories' => $this->categories->all(),
-            'product' => $product->load(['images', 'compatibilities', 'specifications']),
+            'product' => $productData,
         ]);
     }
 

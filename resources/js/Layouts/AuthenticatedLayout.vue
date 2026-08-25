@@ -15,11 +15,19 @@ const allNavigation = [
     { name: 'Dashboard', href: 'dashboard', icon: 'home', current: 'dashboard', permissions: null },
     { name: 'Punto de venta', href: 'pos.create', icon: 'cart', current: ['pos.*', 'cash-sessions.*'], permissions: ['sales.create'] },
     { name: 'Ventas', href: 'sales.index', icon: 'receipt', current: 'sales.index', permissions: ['sales.view'] },
+    { name: 'Cotizaciones', href: 'quotes.index', icon: 'document', current: 'quotes.*', permissions: ['quotes.manage'] },
+    { name: 'Taller', href: 'workshop.index', icon: 'wrench', current: 'workshop.*', permissions: ['workshop.manage'] },
+    { name: 'Vehículos', href: 'vehicles.index', icon: 'car', current: 'vehicles.*', permissions: ['workshop.manage'] },
+    { name: 'Mecánicos', href: 'mechanics.index', icon: 'users', current: 'mechanics.*', permissions: ['workshop.manage'] },
+    { name: 'Fallas comunes', href: 'common-failures.index', icon: 'alert', current: 'common-failures.*', permissions: ['workshop.manage'] },
+    { name: 'Servicios comunes', href: 'common-services.index', icon: 'check', current: 'common-services.*', permissions: ['workshop.manage'] },
     { name: 'Pedidos online', href: 'orders.index', icon: 'bag', current: 'orders.index', permissions: ['orders.manage'] },
     { name: 'Productos', href: 'products.index', icon: 'box', current: 'products.*', permissions: ['products.view', 'products.manage'] },
+    { name: 'Alertas', href: 'alerts.index', icon: 'bell', current: 'alerts.*', permissions: ['products.view', 'products.manage'] },
     { name: 'Categorías', href: 'categories.index', icon: 'tag', current: 'categories.*', permissions: ['categories.manage'] },
     { name: 'Proveedores', href: 'suppliers.index', icon: 'truck', current: 'suppliers.*', permissions: ['suppliers.manage'] },
     { name: 'Clientes', href: 'customers.index', icon: 'users', current: 'customers.*', permissions: ['customers.manage'] },
+    { name: 'Configuración', href: 'settings.index', icon: 'gear', current: 'settings.*', permissions: ['settings.manage'] },
 ];
 
 const navigation = computed(() =>
@@ -112,6 +120,20 @@ function initials(name) {
                             <slot name="header" />
                         </div>
                     </div>
+
+                    <Link
+                        v-if="$page.props.alertsCount > 0"
+                        :href="route('alerts.index')"
+                        class="relative flex h-9 w-9 items-center justify-center rounded-full text-slate-500 hover:bg-slate-100 hover:text-slate-700"
+                        title="Alertas de inventario"
+                    >
+                        <Icon name="bell" class="h-5 w-5" />
+                        <span
+                            class="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-600 px-1 text-[10px] font-bold text-white"
+                        >
+                            {{ $page.props.alertsCount }}
+                        </span>
+                    </Link>
 
                     <Dropdown align="right" width="48">
                         <template #trigger>

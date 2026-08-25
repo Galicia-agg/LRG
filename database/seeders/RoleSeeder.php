@@ -26,8 +26,11 @@ class RoleSeeder extends Seeder
             'sales.void',
             'cash-sessions.manage',
             'orders.manage',
+            'quotes.manage',
+            'workshop.manage',
             'reports.view',
             'users.manage',
+            'settings.manage',
         ];
 
         foreach ($permissions as $permission) {
@@ -47,6 +50,8 @@ class RoleSeeder extends Seeder
             'sales.void',
             'cash-sessions.manage',
             'orders.manage',
+            'quotes.manage',
+            'workshop.manage',
         ]);
     }
 }

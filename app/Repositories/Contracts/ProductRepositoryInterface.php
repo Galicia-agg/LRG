@@ -16,7 +16,11 @@ interface ProductRepositoryInterface extends RepositoryInterface
 
     public function lowStock(): Collection;
 
+    public function expiringSoon(int $days = 30): Collection;
+
     public function activeCatalog(): Collection;
 
     public function findActiveOrFail(int $id): Product;
+
+    public function relatedTo(Product $product, int $limit = 4): Collection;
 }

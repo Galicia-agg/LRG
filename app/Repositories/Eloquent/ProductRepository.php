@@ -55,6 +55,17 @@ class ProductRepository extends BaseRepository implements ProductRepositoryInter
         return $this->model->newQuery()
             ->whereColumn('current_stock', '<=', 'min_stock')
             ->where('active', true)
+            ->orderBy('name')
+            ->get();
+    }
+
+    public function expiringSoon(int $days = 30): Collection
+    {
+        return $this->model->newQuery()
+            ->where('active', true)
+            ->whereNotNull('expiration_date')
+            ->whereDate('expiration_date', '<=', now()->addDays($days))
+            ->orderBy('expiration_date')
             ->get();
     }
 
@@ -62,8 +73,8 @@ class ProductRepository extends BaseRepository implements ProductRepositoryInter
     {
         return $this->model->newQuery()
             ->where('active', true)
-            ->where('current_stock', '>', 0)
             ->with(['category', 'images', 'compatibilities'])
+            ->orderByRaw('current_stock > 0 desc')
             ->orderBy('name')
             ->get();
     }
@@ -74,5 +85,18 @@ class ProductRepository extends BaseRepository implements ProductRepositoryInter
             ->where('active', true)
             ->with(['category.parent', 'images', 'compatibilities', 'specifications'])
             ->findOrFail($id);
+    }
+
+    public function relatedTo(Product $product, int $limit = 4): Collection
+    {
+        return $this->model->newQuery()
+            ->where('active', true)
+            ->where('current_stock', '>', 0)
+            ->where('id', '!=', $product->id)
+            ->where('category_id', $product->category_id)
+            ->with(['category', 'images'])
+            ->inRandomOrder()
+            ->limit($limit)
+            ->get();
     }
 }

@@ -19,7 +19,7 @@ class OrderService
     }
 
     /**
-     * @param  array{customer_name: string, customer_phone: string, customer_email?: ?string, customer_address?: ?string}  $customerData
+     * @param  array{customer_name: string, customer_phone: string, customer_email?: ?string, customer_address?: ?string, delivery_type?: string}  $customerData
      * @param  array<int, array{product_id: int, quantity: float}>  $items
      */
     public function createOrder(array $customerData, array $items, ?string $notes = null): Order
@@ -59,11 +59,15 @@ class OrderService
                 throw new InvalidArgumentException('El pedido debe tener al menos un producto.');
             }
 
+            $deliveryType = $customerData['delivery_type'] ?? 'domicilio';
+
             $order = Order::query()->create([
                 'customer_name' => $customerData['customer_name'],
                 'customer_phone' => $customerData['customer_phone'],
                 'customer_email' => $customerData['customer_email'] ?? null,
                 'customer_address' => $customerData['customer_address'] ?? null,
+                'delivery_type' => $deliveryType,
+                'delivery_status' => $deliveryType === 'domicilio' ? 'pendiente' : null,
                 'notes' => $notes,
                 'subtotal' => $subtotal,
                 'total' => $subtotal,
@@ -90,6 +94,21 @@ class OrderService
         }
 
         $order->update(['status' => 'confirmed']);
+
+        return $order->refresh();
+    }
+
+    public function updateDeliveryStatus(Order $order, string $deliveryStatus): Order
+    {
+        if (! $order->isDelivery()) {
+            throw new InvalidArgumentException('Este pedido no es a domicilio.');
+        }
+
+        if (! in_array($deliveryStatus, ['pendiente', 'en_camino', 'entregado'], true)) {
+            throw new InvalidArgumentException('Estado de entrega no válido.');
+        }
+
+        $order->update(['delivery_status' => $deliveryStatus]);
 
         return $order->refresh();
     }

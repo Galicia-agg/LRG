@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\Product;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 
@@ -56,7 +57,29 @@ class HandleInertiaRequests extends Middleware
             'flash' => [
                 'success' => fn () => $request->session()->get('success'),
                 'warning' => fn () => $request->session()->get('warning'),
+                'saleId' => fn () => $request->session()->get('saleId'),
+                'customerId' => fn () => $request->session()->get('customerId'),
+                'vehicleId' => fn () => $request->session()->get('vehicleId'),
+                'mechanicId' => fn () => $request->session()->get('mechanicId'),
             ],
+            'alertsCount' => function () use ($user) {
+                if (! $user || (! $user->can('products.view') && ! $user->can('products.manage'))) {
+                    return 0;
+                }
+
+                $lowStock = Product::query()
+                    ->whereColumn('current_stock', '<=', 'min_stock')
+                    ->where('active', true)
+                    ->count();
+
+                $expiringSoon = Product::query()
+                    ->where('active', true)
+                    ->whereNotNull('expiration_date')
+                    ->whereDate('expiration_date', '<=', now()->addDays(30))
+                    ->count();
+
+                return $lowStock + $expiringSoon;
+            },
         ];
     }
 }

@@ -30,8 +30,10 @@ const form = useForm({
     is_bulk: props.product?.is_bulk ?? false,
     cost_price: props.product?.cost_price ?? '0.00',
     sale_price: props.product?.sale_price ?? '0.00',
+    compare_at_price: props.product?.compare_at_price ?? '',
     min_stock: props.product?.min_stock ?? '0',
     current_stock: props.product?.current_stock ?? '0',
+    expiration_date: props.product?.expiration_date ?? '',
     active: props.product?.active ?? true,
     compatibilities: (props.product?.compatibilities ?? []).map((c) => ({
         brand: c.brand,
@@ -403,6 +405,21 @@ const selectClasses =
                         </div>
 
                         <div>
+                            <InputLabel for="compare_at_price" value="Precio antes de descuento (opcional)" />
+                            <TextInput
+                                id="compare_at_price"
+                                v-model="form.compare_at_price"
+                                type="number"
+                                step="0.01"
+                                class="mt-1 block w-full"
+                            />
+                            <p class="mt-1 text-xs text-slate-400">
+                                Si lo llenas, la tienda muestra el precio tachado y el % de descuento. Debe ser mayor al precio de venta.
+                            </p>
+                            <InputError :message="form.errors.compare_at_price" class="mt-2" />
+                        </div>
+
+                        <div>
                             <InputLabel for="min_stock" value="Stock mínimo" />
                             <TextInput
                                 id="min_stock"
@@ -424,6 +441,20 @@ const selectClasses =
                                 class="mt-1 block w-full"
                             />
                             <InputError :message="form.errors.current_stock" class="mt-2" />
+                        </div>
+
+                        <div>
+                            <InputLabel for="expiration_date" value="Fecha de vencimiento (opcional)" />
+                            <TextInput
+                                id="expiration_date"
+                                v-model="form.expiration_date"
+                                type="date"
+                                class="mt-1 block w-full"
+                            />
+                            <p class="mt-1 text-xs text-slate-400">
+                                Solo para productos perecederos (ej. aceites). Se usa para las alertas de vencimiento.
+                            </p>
+                            <InputError :message="form.errors.expiration_date" class="mt-2" />
                         </div>
 
                         <div class="flex items-center gap-2">

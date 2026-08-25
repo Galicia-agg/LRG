@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Exceptions\InsufficientStockException;
 use App\Http\Requests\StoreSaleRequest;
+use App\Models\Quote;
 use App\Models\Sale;
 use App\Repositories\Contracts\CashSessionRepositoryInterface;
 use App\Repositories\Contracts\CustomerRepositoryInterface;
@@ -39,10 +40,34 @@ class SaleController extends Controller
                 ->with('warning', 'Debes abrir una caja antes de vender.');
         }
 
+        $quote = null;
+
+        if ($request->filled('quote')) {
+            $quoteModel = Quote::with('items.product')->find((int) $request->input('quote'));
+
+            if ($quoteModel && ! $quoteModel->isExpired() && ! $quoteModel->isConverted()) {
+                $quote = [
+                    'id' => $quoteModel->id,
+                    'customer_id' => $quoteModel->customer_id,
+                    'customer_name' => $quoteModel->customer_name,
+                    'customer_phone' => $quoteModel->customer_phone,
+                    'customer_nit' => $quoteModel->customer_nit,
+                    'items' => $quoteModel->items->map(fn ($item) => [
+                        'product_id' => $item->product_id,
+                        'name' => $item->product?->name ?? 'Producto eliminado',
+                        'unit' => $item->product?->unit,
+                        'unit_price' => (float) $item->unit_price,
+                        'quantity' => (float) $item->quantity,
+                    ])->values(),
+                ];
+            }
+        }
+
         return Inertia::render('Pos/Index', [
             'products' => $this->products->activeCatalog(),
             'customers' => $this->customers->all(),
             'cashSession' => $session,
+            'quote' => $quote,
         ]);
     }
 
@@ -57,7 +82,7 @@ class SaleController extends Controller
             : null;
 
         try {
-            $this->saleService->createSale(
+            $sale = $this->saleService->createSale(
                 $session,
                 $request->user(),
                 $customer,
@@ -69,7 +94,54 @@ class SaleController extends Controller
             return back()->withErrors(['items' => $e->getMessage()])->withInput();
         }
 
-        return redirect()->route('pos.create')->with('success', 'Venta registrada correctamente.');
+        if ($request->filled('quote_id')) {
+            Quote::whereKey($request->input('quote_id'))
+                ->whereNull('sale_id')
+                ->update(['sale_id' => $sale->id]);
+        }
+
+        return redirect()->route('pos.create')
+            ->with('success', 'Venta registrada correctamente.')
+            ->with('saleId', $sale->id);
+    }
+
+    public function receipt(Sale $sale): Response
+    {
+        $sale->load(['items.product', 'payments', 'user', 'customer', 'cashSession']);
+
+        $paymentLabels = [
+            'efectivo' => 'Efectivo',
+            'tarjeta' => 'Tarjeta',
+            'transferencia' => 'Transferencia',
+        ];
+
+        return Inertia::render('Sales/Receipt', [
+            'sale' => [
+                'id' => $sale->id,
+                'sold_at' => $sale->sold_at->toIso8601String(),
+                'status' => $sale->status,
+                'cashier' => $sale->user?->name ?? '—',
+                'customer' => $sale->customer?->only(['name', 'nit', 'phone', 'address']),
+                'items' => $sale->items->map(fn ($item) => [
+                    'name' => $item->product?->name ?? 'Producto eliminado',
+                    'quantity' => (float) $item->quantity,
+                    'unit_price' => (float) $item->unit_price,
+                    'discount' => (float) $item->discount,
+                    'subtotal' => (float) $item->subtotal,
+                ])->values(),
+                'subtotal' => (float) $sale->subtotal,
+                'labor_total' => (float) $sale->labor_total,
+                'discount' => (float) $sale->discount,
+                'total' => (float) $sale->total,
+                'payments' => $sale->payments->map(fn ($payment) => [
+                    'method' => $paymentLabels[$payment->method] ?? $payment->method,
+                    'amount' => (float) $payment->amount,
+                ])->values(),
+            ],
+            'business' => [
+                'name' => config('app.name'),
+            ],
+        ]);
     }
 
     public function index(Request $request): Response
@@ -105,7 +177,9 @@ class SaleController extends Controller
         return response()->streamDownload(function () use ($sales, $statusLabels, $includeProfit) {
             $handle = fopen('php://output', 'w');
 
-            $header = ['Fecha', 'Hora', 'Venta #', 'Cliente', 'Cajero', 'Subtotal', 'Descuento', 'Total'];
+            $originLabels = ['mostrador' => 'Mostrador (POS)', 'taller' => 'Taller', 'tienda' => 'Tienda online'];
+
+            $header = ['Fecha', 'Hora', 'Venta #', 'Origen', 'Cliente', 'Cajero', 'Subtotal', 'Mano de obra', 'Descuento', 'Total'];
             if ($includeProfit) {
                 $header[] = 'Costo';
                 $header[] = 'Ganancia';
@@ -119,9 +193,11 @@ class SaleController extends Controller
                     $sale->sold_at->toDateString(),
                     $sale->sold_at->format('H:i'),
                     $sale->id,
+                    $originLabels[$sale->origin()] ?? $sale->origin(),
                     $sale->customer?->name ?? 'Consumidor final',
                     $sale->user?->name ?? '—',
                     $sale->subtotal,
+                    $sale->labor_total,
                     $sale->discount,
                     $sale->total,
                 ];
@@ -228,17 +304,32 @@ class SaleController extends Controller
             ->take(8)
             ->values();
 
+        $originLabels = ['mostrador' => 'Mostrador (POS)', 'taller' => 'Taller', 'tienda' => 'Tienda online'];
+
+        $byOrigin = $completed
+            ->groupBy(fn (Sale $sale) => $sale->origin())
+            ->map(fn ($group, $origin) => [
+                'origin' => $originLabels[$origin] ?? $origin,
+                'total' => (float) $group->sum('total'),
+                'count' => $group->count(),
+            ])
+            ->sortByDesc('total')
+            ->values();
+
         $total = (float) $completed->sum('total');
         $count = $completed->count();
+        $laborTotal = (float) $completed->sum('labor_total');
 
         $summary = [
             'total' => $total,
             'count' => $count,
             'voidedCount' => $voided->count(),
             'averageTicket' => $count > 0 ? round($total / $count, 2) : 0.0,
+            'laborTotal' => $laborTotal,
             'byMethod' => $byMethod,
             'byCashier' => $byCashier,
             'byDay' => $byDay,
+            'byOrigin' => $byOrigin,
             'topProducts' => $topProducts,
         ];
 

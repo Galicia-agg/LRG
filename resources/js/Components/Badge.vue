@@ -16,6 +16,7 @@ const toneClasses = computed(
             red: 'bg-red-100 text-red-700',
             amber: 'bg-amber-100 text-amber-800',
             primary: 'bg-primary-100 text-primary-700',
+            accent: 'bg-accent-100 text-accent-700',
         })[props.tone],
 );
 </script>

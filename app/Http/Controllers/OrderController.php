@@ -44,6 +44,21 @@ class OrderController extends Controller
         return back()->with('success', 'Pedido confirmado.');
     }
 
+    public function updateDeliveryStatus(Request $request, Order $order): RedirectResponse
+    {
+        $data = $request->validate([
+            'delivery_status' => ['required', 'in:pendiente,en_camino,entregado'],
+        ]);
+
+        try {
+            $this->orderService->updateDeliveryStatus($order, $data['delivery_status']);
+        } catch (InvalidArgumentException $e) {
+            return back()->withErrors(['order' => $e->getMessage()]);
+        }
+
+        return back()->with('success', 'Estado de entrega actualizado.');
+    }
+
     public function cancel(Request $request, Order $order): RedirectResponse
     {
         try {
@@ -64,7 +79,7 @@ class OrderController extends Controller
         }
 
         try {
-            $this->orderService->complete(
+            $order = $this->orderService->complete(
                 $order,
                 $session,
                 $request->user(),
@@ -74,6 +89,8 @@ class OrderController extends Controller
             return back()->withErrors(['order' => $e->getMessage()]);
         }
 
-        return back()->with('success', 'Pedido completado y registrado como venta.');
+        return back()
+            ->with('success', 'Pedido completado y registrado como venta.')
+            ->with('saleId', $order->sale_id);
     }
 }

@@ -31,8 +31,10 @@ class SaleService
         array $items,
         array $payments,
         float $discount = 0,
+        float $laborTotal = 0,
+        string $stockMovementReason = 'venta',
     ): Sale {
-        if (empty($items)) {
+        if (empty($items) && $laborTotal <= 0) {
             throw new InvalidArgumentException('La venta debe tener al menos un producto.');
         }
 
@@ -40,7 +42,7 @@ class SaleService
             throw new InvalidArgumentException('La caja indicada no está abierta.');
         }
 
-        return DB::transaction(function () use ($session, $user, $customer, $items, $payments, $discount) {
+        return DB::transaction(function () use ($session, $user, $customer, $items, $payments, $discount, $laborTotal, $stockMovementReason) {
             $subtotal = 0.0;
             $lines = [];
 
@@ -55,7 +57,7 @@ class SaleService
                 $subtotal += $lineSubtotal;
             }
 
-            $total = $subtotal - $discount;
+            $total = $subtotal + $laborTotal - $discount;
             $paymentsTotal = array_sum(array_column($payments, 'amount'));
 
             if (abs($paymentsTotal - $total) > 0.01) {
@@ -67,6 +69,7 @@ class SaleService
                 'user_id' => $user->id,
                 'customer_id' => $customer?->id,
                 'subtotal' => $subtotal,
+                'labor_total' => $laborTotal,
                 'discount' => $discount,
                 'total' => $total,
                 'status' => 'completed',
@@ -86,7 +89,7 @@ class SaleService
                 $this->inventory->decrease(
                     $line['product'],
                     $line['quantity'],
-                    'venta',
+                    $stockMovementReason,
                     $sale,
                     $user->id,
                 );

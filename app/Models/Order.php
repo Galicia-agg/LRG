@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 #[Fillable([
     'customer_id', 'sale_id', 'customer_name', 'customer_phone', 'customer_email',
-    'customer_address', 'notes', 'subtotal', 'total', 'status',
+    'customer_address', 'delivery_type', 'delivery_status', 'notes', 'subtotal', 'total', 'status',
     'cancelled_at', 'cancellation_reason',
 ])]
 class Order extends Model
@@ -41,5 +41,10 @@ class Order extends Model
     public function isPending(): bool
     {
         return $this->status === 'pending';
+    }
+
+    public function isDelivery(): bool
+    {
+        return $this->delivery_type === 'domicilio';
     }
 }

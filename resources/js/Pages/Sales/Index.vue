@@ -5,7 +5,7 @@ import Card from '@/Components/Card.vue';
 import Badge from '@/Components/Badge.vue';
 import Icon from '@/Components/Icon.vue';
 import { usePermissions } from '@/Composables/usePermissions';
-import { Head, router } from '@inertiajs/vue3';
+import { Head, Link, router } from '@inertiajs/vue3';
 
 const props = defineProps({
     sales: Array,
@@ -30,6 +30,12 @@ const statusLabels = {
     returned: { text: 'Anulada', tone: 'amber' },
     cancelled: { text: 'Cancelada', tone: 'slate' },
 };
+
+function originOf(sale) {
+    if (sale.work_order) return { text: 'Taller', tone: 'primary' };
+    if (sale.order) return { text: 'Tienda online', tone: 'green' };
+    return { text: 'Mostrador', tone: 'slate' };
+}
 
 function toISODate(date) {
     return date.toLocaleDateString('sv-SE'); // sv-SE = ISO 8601 yyyy-mm-dd
@@ -244,6 +250,11 @@ function formatDay(dateStr) {
                     <p class="mt-1 text-2xl font-semibold text-emerald-700">Q {{ summary.profit.toFixed(2) }}</p>
                     <p class="mt-1 text-xs text-slate-500">Margen: {{ summary.profitMargin }}%</p>
                 </Card>
+                <Card v-if="summary.laborTotal > 0" padded>
+                    <p class="text-sm font-medium text-slate-500">Ingresos por mano de obra</p>
+                    <p class="mt-1 text-2xl font-semibold text-primary-700">Q {{ summary.laborTotal.toFixed(2) }}</p>
+                    <p class="mt-1 text-xs text-slate-500">De órdenes de taller</p>
+                </Card>
             </div>
 
             <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
@@ -288,7 +299,7 @@ function formatDay(dateStr) {
                 </Card>
             </div>
 
-            <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
+            <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
                 <!-- Top productos -->
                 <Card>
                     <h3 class="border-b border-slate-100 px-6 py-3 text-sm font-semibold text-slate-900">
@@ -346,6 +357,27 @@ function formatDay(dateStr) {
                         </tbody>
                     </table>
                 </Card>
+
+                <!-- Por origen -->
+                <Card>
+                    <h3 class="border-b border-slate-100 px-6 py-3 text-sm font-semibold text-slate-900">
+                        Ventas por origen
+                    </h3>
+                    <table class="min-w-full divide-y divide-slate-100 text-sm">
+                        <tbody class="divide-y divide-slate-100">
+                            <tr v-for="entry in summary.byOrigin" :key="entry.origin">
+                                <td class="px-6 py-2.5 text-slate-700">{{ entry.origin }}</td>
+                                <td class="px-6 py-2.5 text-slate-500">{{ entry.count }} venta(s)</td>
+                                <td class="px-6 py-2.5 text-right font-medium text-slate-900">
+                                    Q {{ Number(entry.total).toFixed(2) }}
+                                </td>
+                            </tr>
+                            <tr v-if="(summary.byOrigin ?? []).length === 0">
+                                <td colspan="3" class="px-6 py-6 text-center text-slate-400">Sin datos</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </Card>
             </div>
 
             <!-- Detalle de ventas -->
@@ -356,6 +388,7 @@ function formatDay(dateStr) {
                             <tr class="text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
                                 <th class="px-6 py-3"></th>
                                 <th class="px-6 py-3">Fecha</th>
+                                <th class="px-6 py-3">Origen</th>
                                 <th class="px-6 py-3">Cliente</th>
                                 <th class="px-6 py-3">Cajero</th>
                                 <th class="px-6 py-3">Método</th>
@@ -384,6 +417,9 @@ function formatDay(dateStr) {
                                         {{ new Date(sale.sold_at).toLocaleDateString('es-GT') }}
                                         {{ formatTime(sale.sold_at) }}
                                     </td>
+                                    <td class="px-6 py-3">
+                                        <Badge :tone="originOf(sale).tone">{{ originOf(sale).text }}</Badge>
+                                    </td>
                                     <td class="px-6 py-3">{{ sale.customer?.name ?? 'Consumidor final' }}</td>
                                     <td class="px-6 py-3">{{ sale.user?.name ?? '—' }}</td>
                                     <td class="px-6 py-3">
@@ -396,17 +432,26 @@ function formatDay(dateStr) {
                                         </Badge>
                                     </td>
                                     <td class="px-6 py-3 text-right">
-                                        <button
-                                            v-if="sale.status === 'completed' && can('sales.void')"
-                                            @click="voidSale(sale)"
-                                            class="font-medium text-red-600 hover:text-red-800"
-                                        >
-                                            Anular
-                                        </button>
+                                        <div class="flex items-center justify-end gap-3">
+                                            <Link
+                                                :href="route('sales.receipt', sale.id)"
+                                                target="_blank"
+                                                class="font-medium text-primary-600 hover:text-primary-800"
+                                            >
+                                                Recibo
+                                            </Link>
+                                            <button
+                                                v-if="sale.status === 'completed' && can('sales.void')"
+                                                @click="voidSale(sale)"
+                                                class="font-medium text-red-600 hover:text-red-800"
+                                            >
+                                                Anular
+                                            </button>
+                                        </div>
                                     </td>
                                 </tr>
                                 <tr v-if="expandedId === sale.id" class="bg-slate-50/60">
-                                    <td colspan="8" class="px-6 py-4">
+                                    <td colspan="9" class="px-6 py-4">
                                         <table class="w-full max-w-lg text-xs text-slate-600">
                                             <tr v-for="item in sale.items" :key="item.id">
                                                 <td class="py-1 pr-4">{{ item.product?.name ?? '—' }}</td>
@@ -419,7 +464,7 @@ function formatDay(dateStr) {
                             </template>
 
                             <tr v-if="sales.length === 0">
-                                <td colspan="8" class="px-6 py-10 text-center text-slate-500">
+                                <td colspan="9" class="px-6 py-10 text-center text-slate-500">
                                     No hay ventas registradas en este período.
                                 </td>
                             </tr>

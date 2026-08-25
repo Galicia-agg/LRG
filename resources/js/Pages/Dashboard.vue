@@ -89,12 +89,47 @@ const quickLinks = computed(() => allQuickLinks.filter((link) => canAny(link.per
                                 {{ stats.lowStockProducts }}
                             </p>
                             <p class="mt-1 text-xs text-slate-500">productos bajo el mínimo</p>
+                            <Link
+                                v-if="can('products.view') || can('products.manage')"
+                                :href="route('alerts.index')"
+                                class="mt-1 inline-block text-xs font-medium text-primary-600 hover:underline"
+                            >
+                                Ver alertas
+                            </Link>
                         </div>
                         <span
                             class="flex h-10 w-10 items-center justify-center rounded-lg"
                             :class="stats.lowStockProducts > 0 ? 'bg-amber-50 text-amber-600' : 'bg-primary-50 text-primary-600'"
                         >
                             <Icon name="alert" class="h-5 w-5" />
+                        </span>
+                    </div>
+                </Card>
+
+                <Card padded>
+                    <div class="flex items-start justify-between">
+                        <div>
+                            <p class="text-sm font-medium text-slate-500">Próximos a vencer</p>
+                            <p
+                                class="mt-1 text-2xl font-semibold"
+                                :class="stats.expiringSoonProducts > 0 ? 'text-red-600' : 'text-slate-900'"
+                            >
+                                {{ stats.expiringSoonProducts }}
+                            </p>
+                            <p class="mt-1 text-xs text-slate-500">en los próximos 30 días</p>
+                            <Link
+                                v-if="can('products.view') || can('products.manage')"
+                                :href="route('alerts.index')"
+                                class="mt-1 inline-block text-xs font-medium text-primary-600 hover:underline"
+                            >
+                                Ver alertas
+                            </Link>
+                        </div>
+                        <span
+                            class="flex h-10 w-10 items-center justify-center rounded-lg"
+                            :class="stats.expiringSoonProducts > 0 ? 'bg-red-50 text-red-600' : 'bg-primary-50 text-primary-600'"
+                        >
+                            <Icon name="clock" class="h-5 w-5" />
                         </span>
                     </div>
                 </Card>
