@@ -11,6 +11,7 @@ use App\Repositories\Contracts\CustomerRepositoryInterface;
 use App\Repositories\Contracts\ProductRepositoryInterface;
 use App\Repositories\Contracts\SaleRepositoryInterface;
 use App\Services\SaleService;
+use App\Support\Csv;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -214,7 +215,7 @@ class SaleController extends Controller
                 $row[] = $sale->payments->pluck('method')->implode(', ');
                 $row[] = $statusLabels[$sale->status] ?? $sale->status;
 
-                fputcsv($handle, $row);
+                fputcsv($handle, Csv::safeRow($row));
             }
 
             fclose($handle);

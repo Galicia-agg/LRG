@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Product;
 use App\Repositories\Contracts\ProductRepositoryInterface;
+use App\Support\Csv;
 use Inertia\Inertia;
 use Inertia\Response;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -54,14 +55,14 @@ class AlertController extends Controller
             fputcsv($handle, ['SKU', 'Producto', 'Unidad', 'Stock actual', 'Stock mínimo', 'Faltante']);
 
             foreach ($products as $product) {
-                fputcsv($handle, [
+                fputcsv($handle, Csv::safeRow([
                     $product->sku,
                     $product->name,
                     $product->unit,
                     $product->current_stock,
                     $product->min_stock,
                     max(0, (float) $product->min_stock - (float) $product->current_stock),
-                ]);
+                ]));
             }
 
             fclose($handle);
