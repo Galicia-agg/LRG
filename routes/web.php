@@ -7,6 +7,7 @@ use App\Http\Controllers\CommonFailureController;
 use App\Http\Controllers\CommonServiceController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\CustomerVehicleController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\MechanicController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ProductController;
@@ -17,10 +18,6 @@ use App\Http\Controllers\SettingController;
 use App\Http\Controllers\StorefrontController;
 use App\Http\Controllers\SupplierController;
 use App\Http\Controllers\WorkOrderController;
-use App\Models\CashSession;
-use App\Models\Order;
-use App\Models\Product;
-use App\Models\Sale;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -41,39 +38,9 @@ Route::post('/tienda/pedido', [StorefrontController::class, 'store'])
     ->middleware('throttle:10,1')
     ->name('storefront.store');
 
-Route::get('/dashboard', function () {
-    $todaySales = Sale::query()
-        ->where('status', 'completed')
-        ->whereDate('sold_at', today());
-
-    $openCashSession = CashSession::query()
-        ->where('user_id', auth()->id())
-        ->where('status', 'open')
-        ->latest('opened_at')
-        ->first();
-
-    return Inertia::render('Dashboard', [
-        'stats' => [
-            'salesToday' => [
-                'total' => (float) $todaySales->clone()->sum('total'),
-                'count' => $todaySales->clone()->count(),
-            ],
-            'activeProducts' => Product::query()->where('active', true)->count(),
-            'lowStockProducts' => Product::query()
-                ->where('active', true)
-                ->whereColumn('current_stock', '<=', 'min_stock')
-                ->count(),
-            'expiringSoonProducts' => Product::query()
-                ->where('active', true)
-                ->whereNotNull('expiration_date')
-                ->whereDate('expiration_date', '<=', now()->addDays(30))
-                ->count(),
-            'cashSessionOpen' => $openCashSession !== null,
-            'cashSessionOpeningAmount' => $openCashSession?->opening_amount,
-            'pendingOrders' => Order::query()->where('status', 'pending')->count(),
-        ],
-    ]);
-})->middleware(['auth', 'verified'])->name('dashboard');
+Route::get('/dashboard', [DashboardController::class, 'index'])
+    ->middleware(['auth', 'verified'])
+    ->name('dashboard');
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');

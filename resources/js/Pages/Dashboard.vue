@@ -4,14 +4,41 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import Card from '@/Components/Card.vue';
 import Badge from '@/Components/Badge.vue';
 import Icon from '@/Components/Icon.vue';
+import BarChart from '@/Components/BarChart.vue';
+import DonutChart from '@/Components/DonutChart.vue';
 import { usePermissions } from '@/Composables/usePermissions';
 import { Head, Link } from '@inertiajs/vue3';
 
 const props = defineProps({
     stats: Object,
+    charts: Object,
 });
 
 const { can, canAny } = usePermissions();
+
+const salesTrendTotal = computed(() => (props.charts.salesTrend ?? []).reduce((sum, point) => sum + point.total, 0));
+
+const maxProductRevenue = computed(() => Math.max(...(props.charts.topProducts ?? []).map((p) => p.revenue), 1));
+
+const workshopSegments = computed(() => [
+    { label: 'Servicios', value: props.charts.workshopByType?.servicio ?? 0, color: '#65a30d' },
+    { label: 'Reparaciones', value: props.charts.workshopByType?.reparacion ?? 0, color: '#ea580c' },
+]);
+
+const orderStatusMeta = {
+    pending: { label: 'Pendientes', color: '#f59e0b' },
+    confirmed: { label: 'Confirmados', color: '#ea580c' },
+    completed: { label: 'Completados', color: '#059669' },
+    cancelled: { label: 'Cancelados', color: '#94a3b8' },
+};
+
+const orderStatusSegments = computed(() =>
+    Object.entries(orderStatusMeta).map(([status, meta]) => ({
+        label: meta.label,
+        color: meta.color,
+        value: props.charts.ordersByStatus?.[status] ?? 0,
+    })),
+);
 
 const allQuickLinks = [
     { name: 'Punto de venta', description: 'Registrar una venta', href: 'pos.create', icon: 'cart', permissions: ['sales.create'] },
@@ -178,6 +205,55 @@ const quickLinks = computed(() => allQuickLinks.filter((link) => canAny(link.per
                         </span>
                     </div>
                 </Card>
+            </div>
+
+            <!-- Charts -->
+            <div v-if="charts.salesTrend || charts.topProducts || charts.workshopByType || charts.ordersByStatus">
+                <h3 class="mb-3 text-sm font-semibold text-slate-700">Resultados del sistema</h3>
+                <div class="grid grid-cols-1 gap-4 lg:grid-cols-2">
+                    <Card v-if="charts.salesTrend" padded>
+                        <div class="flex items-center justify-between">
+                            <p class="text-sm font-semibold text-slate-900">Ventas de los últimos 14 días</p>
+                            <p class="text-xs text-slate-500">Total: Q {{ salesTrendTotal.toFixed(2) }}</p>
+                        </div>
+                        <div class="mt-4">
+                            <BarChart :data="charts.salesTrend.map((p) => ({ label: p.label, value: p.total }))" color="#ea580c" value-prefix="Q " />
+                        </div>
+                    </Card>
+
+                    <Card v-if="charts.topProducts" padded>
+                        <p class="text-sm font-semibold text-slate-900">Productos más vendidos (30 días)</p>
+                        <div class="mt-4 space-y-3">
+                            <div v-for="product in charts.topProducts" :key="product.name">
+                                <div class="flex items-center justify-between text-xs">
+                                    <span class="font-medium text-slate-700">{{ product.name }}</span>
+                                    <span class="text-slate-500">Q {{ product.revenue.toFixed(2) }}</span>
+                                </div>
+                                <div class="mt-1 h-2 w-full overflow-hidden rounded-full bg-slate-100">
+                                    <div
+                                        class="h-full rounded-full bg-primary-600"
+                                        :style="{ width: `${Math.max((product.revenue / maxProductRevenue) * 100, 3)}%` }"
+                                    ></div>
+                                </div>
+                            </div>
+                            <p v-if="charts.topProducts.length === 0" class="text-xs text-slate-400">Sin ventas en los últimos 30 días.</p>
+                        </div>
+                    </Card>
+
+                    <Card v-if="charts.workshopByType" padded>
+                        <p class="text-sm font-semibold text-slate-900">Taller: servicios vs. reparaciones</p>
+                        <div class="mt-4">
+                            <DonutChart :segments="workshopSegments" />
+                        </div>
+                    </Card>
+
+                    <Card v-if="charts.ordersByStatus" padded>
+                        <p class="text-sm font-semibold text-slate-900">Pedidos online por estado</p>
+                        <div class="mt-4">
+                            <DonutChart :segments="orderStatusSegments" />
+                        </div>
+                    </Card>
+                </div>
             </div>
 
             <!-- Quick links -->
