@@ -14,7 +14,7 @@ const props = defineProps({
     charts: Object,
 });
 
-const { can, canAny } = usePermissions();
+const { canAny } = usePermissions();
 
 const salesTrendTotal = computed(() => (props.charts.salesTrend ?? []).reduce((sum, point) => sum + point.total, 0));
 
@@ -51,6 +51,10 @@ const allQuickLinks = [
 ];
 
 const quickLinks = computed(() => allQuickLinks.filter((link) => canAny(link.permissions)));
+
+const hasAnyStat = computed(
+    () => props.stats.salesToday || props.stats.activeProducts !== null || props.stats.cashSession || props.stats.pendingOrders !== null,
+);
 </script>
 
 <template>
@@ -62,9 +66,15 @@ const quickLinks = computed(() => allQuickLinks.filter((link) => canAny(link.per
         </template>
 
         <div class="mx-auto max-w-screen-2xl space-y-6 px-4 py-8 sm:px-6 lg:px-8">
+            <Card v-if="!hasAnyStat" padded>
+                <p class="text-sm text-slate-500">
+                    Tu cuenta todavía no tiene permisos asignados. Pide a un administrador que te asigne un rol para ver la información del sistema.
+                </p>
+            </Card>
+
             <!-- Stat cards -->
-            <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                <Card padded>
+            <div v-else class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                <Card v-if="stats.salesToday" padded>
                     <div class="flex items-start justify-between">
                         <div>
                             <p class="text-sm font-medium text-slate-500">Ventas de hoy</p>
@@ -75,7 +85,6 @@ const quickLinks = computed(() => allQuickLinks.filter((link) => canAny(link.per
                                 {{ stats.salesToday.count }} venta(s)
                             </p>
                             <Link
-                                v-if="can('sales.view')"
                                 :href="route('sales.index')"
                                 class="mt-1 inline-block text-xs font-medium text-primary-600 hover:underline"
                             >
@@ -88,7 +97,7 @@ const quickLinks = computed(() => allQuickLinks.filter((link) => canAny(link.per
                     </div>
                 </Card>
 
-                <Card padded>
+                <Card v-if="stats.activeProducts !== null" padded>
                     <div class="flex items-start justify-between">
                         <div>
                             <p class="text-sm font-medium text-slate-500">Productos activos</p>
@@ -105,7 +114,7 @@ const quickLinks = computed(() => allQuickLinks.filter((link) => canAny(link.per
                     </div>
                 </Card>
 
-                <Card padded>
+                <Card v-if="stats.lowStockProducts !== null" padded>
                     <div class="flex items-start justify-between">
                         <div>
                             <p class="text-sm font-medium text-slate-500">Stock bajo</p>
@@ -117,7 +126,6 @@ const quickLinks = computed(() => allQuickLinks.filter((link) => canAny(link.per
                             </p>
                             <p class="mt-1 text-xs text-slate-500">productos bajo el mínimo</p>
                             <Link
-                                v-if="can('products.view') || can('products.manage')"
                                 :href="route('alerts.index')"
                                 class="mt-1 inline-block text-xs font-medium text-primary-600 hover:underline"
                             >
@@ -133,7 +141,7 @@ const quickLinks = computed(() => allQuickLinks.filter((link) => canAny(link.per
                     </div>
                 </Card>
 
-                <Card padded>
+                <Card v-if="stats.expiringSoonProducts !== null" padded>
                     <div class="flex items-start justify-between">
                         <div>
                             <p class="text-sm font-medium text-slate-500">Próximos a vencer</p>
@@ -145,7 +153,6 @@ const quickLinks = computed(() => allQuickLinks.filter((link) => canAny(link.per
                             </p>
                             <p class="mt-1 text-xs text-slate-500">en los próximos 30 días</p>
                             <Link
-                                v-if="can('products.view') || can('products.manage')"
                                 :href="route('alerts.index')"
                                 class="mt-1 inline-block text-xs font-medium text-primary-600 hover:underline"
                             >
@@ -161,17 +168,17 @@ const quickLinks = computed(() => allQuickLinks.filter((link) => canAny(link.per
                     </div>
                 </Card>
 
-                <Card padded>
+                <Card v-if="stats.cashSession" padded>
                     <div class="flex items-start justify-between">
                         <div>
                             <p class="text-sm font-medium text-slate-500">Caja</p>
                             <div class="mt-1">
-                                <Badge :tone="stats.cashSessionOpen ? 'green' : 'slate'">
-                                    {{ stats.cashSessionOpen ? 'Abierta' : 'Cerrada' }}
+                                <Badge :tone="stats.cashSession.open ? 'green' : 'slate'">
+                                    {{ stats.cashSession.open ? 'Abierta' : 'Cerrada' }}
                                 </Badge>
                             </div>
-                            <p v-if="stats.cashSessionOpen" class="mt-1 text-xs text-slate-500">
-                                Inicial: Q {{ Number(stats.cashSessionOpeningAmount).toFixed(2) }}
+                            <p v-if="stats.cashSession.open" class="mt-1 text-xs text-slate-500">
+                                Inicial: Q {{ Number(stats.cashSession.openingAmount).toFixed(2) }}
                             </p>
                             <Link v-else :href="route('cash-sessions.create')" class="mt-1 inline-block text-xs font-medium text-primary-600 hover:underline">
                                 Abrir caja
@@ -183,7 +190,7 @@ const quickLinks = computed(() => allQuickLinks.filter((link) => canAny(link.per
                     </div>
                 </Card>
 
-                <Card v-if="can('orders.manage')" padded>
+                <Card v-if="stats.pendingOrders !== null" padded>
                     <div class="flex items-start justify-between">
                         <div>
                             <p class="text-sm font-medium text-slate-500">Pedidos pendientes</p>

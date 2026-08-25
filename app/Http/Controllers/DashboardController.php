@@ -18,37 +18,51 @@ class DashboardController extends Controller
     {
         $user = $request->user();
 
-        $todaySales = Sale::query()->where('status', 'completed')->whereDate('sold_at', today());
+        $canViewProducts = $user->can('products.view') || $user->can('products.manage');
+        $canManageCashSessions = $user->can('cash-sessions.manage');
 
-        $openCashSession = CashSession::query()
-            ->where('user_id', $user->id)
-            ->where('status', 'open')
-            ->latest('opened_at')
-            ->first();
+        $salesToday = null;
+        if ($user->can('sales.view')) {
+            $todaySales = Sale::query()->where('status', 'completed')->whereDate('sold_at', today());
+            $salesToday = [
+                'total' => (float) $todaySales->clone()->sum('total'),
+                'count' => $todaySales->clone()->count(),
+            ];
+        }
+
+        $cashSession = null;
+        if ($canManageCashSessions) {
+            $openCashSession = CashSession::query()
+                ->where('user_id', $user->id)
+                ->where('status', 'open')
+                ->latest('opened_at')
+                ->first();
+
+            $cashSession = [
+                'open' => $openCashSession !== null,
+                'openingAmount' => $openCashSession?->opening_amount,
+            ];
+        }
 
         return Inertia::render('Dashboard', [
             'stats' => [
-                'salesToday' => [
-                    'total' => (float) $todaySales->clone()->sum('total'),
-                    'count' => $todaySales->clone()->count(),
-                ],
-                'activeProducts' => Product::query()->where('active', true)->count(),
-                'lowStockProducts' => Product::query()
+                'salesToday' => $salesToday,
+                'activeProducts' => $canViewProducts ? Product::query()->where('active', true)->count() : null,
+                'lowStockProducts' => $canViewProducts ? Product::query()
                     ->where('active', true)
                     ->whereColumn('current_stock', '<=', 'min_stock')
-                    ->count(),
-                'expiringSoonProducts' => Product::query()
+                    ->count() : null,
+                'expiringSoonProducts' => $canViewProducts ? Product::query()
                     ->where('active', true)
                     ->whereNotNull('expiration_date')
                     ->whereDate('expiration_date', '<=', now()->addDays(30))
-                    ->count(),
-                'cashSessionOpen' => $openCashSession !== null,
-                'cashSessionOpeningAmount' => $openCashSession?->opening_amount,
-                'pendingOrders' => Order::query()->where('status', 'pending')->count(),
+                    ->count() : null,
+                'cashSession' => $cashSession,
+                'pendingOrders' => $user->can('orders.manage') ? Order::query()->where('status', 'pending')->count() : null,
             ],
             'charts' => [
                 'salesTrend' => $user->can('sales.view') ? $this->salesTrend() : null,
-                'topProducts' => ($user->can('products.view') || $user->can('products.manage')) ? $this->topProducts() : null,
+                'topProducts' => $canViewProducts ? $this->topProducts() : null,
                 'workshopByType' => $user->can('workshop.manage') ? $this->workshopByType() : null,
                 'ordersByStatus' => $user->can('orders.manage') ? $this->ordersByStatus() : null,
             ],

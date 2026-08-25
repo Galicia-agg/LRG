@@ -39,7 +39,7 @@ Route::post('/tienda/pedido', [StorefrontController::class, 'store'])
     ->name('storefront.store');
 
 Route::get('/dashboard', [DashboardController::class, 'index'])
-    ->middleware(['auth', 'verified'])
+    ->middleware('auth')
     ->name('dashboard');
 
 Route::middleware('auth')->group(function () {
