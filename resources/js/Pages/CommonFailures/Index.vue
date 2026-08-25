@@ -57,10 +57,19 @@ function cancelEdit() {
     form.reset();
 }
 
-function destroy(failure) {
-    if (confirm(`¿Eliminar "${failure.description}" del catálogo?`)) {
+function deactivate(failure) {
+    if (confirm(`¿Desactivar "${failure.description}"? Ya no aparecerá como opción en nuevas órdenes, pero se conserva en el historial.`)) {
         router.delete(route('common-failures.destroy', failure.id));
     }
+}
+
+function reactivate(failure) {
+    router.put(route('common-failures.update', failure.id), {
+        description: failure.description,
+        category: failure.category,
+        suggested_price: failure.suggested_price,
+        active: true,
+    });
 }
 </script>
 
@@ -95,8 +104,15 @@ function destroy(failure) {
                                         <button @click="edit(failure)" class="cursor-pointer font-medium text-primary-600 hover:text-primary-800">
                                             Editar
                                         </button>
-                                        <button @click="destroy(failure)" class="cursor-pointer font-medium text-red-600 hover:text-red-800">
-                                            Eliminar
+                                        <button
+                                            v-if="failure.active"
+                                            @click="deactivate(failure)"
+                                            class="cursor-pointer font-medium text-red-600 hover:text-red-800"
+                                        >
+                                            Desactivar
+                                        </button>
+                                        <button v-else @click="reactivate(failure)" class="cursor-pointer font-medium text-accent-600 hover:text-accent-800">
+                                            Reactivar
                                         </button>
                                     </div>
                                 </li>

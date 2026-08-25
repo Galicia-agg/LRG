@@ -39,8 +39,8 @@ class CommonServiceController extends Controller
 
     public function destroy(CommonService $commonService): RedirectResponse
     {
-        $this->commonServices->delete($commonService);
+        $this->commonServices->update($commonService, ['active' => false]);
 
-        return back()->with('success', 'Tarea de servicio eliminada del catálogo.');
+        return back()->with('success', 'Tarea de servicio desactivada.');
     }
 }

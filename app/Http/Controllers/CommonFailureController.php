@@ -39,8 +39,8 @@ class CommonFailureController extends Controller
 
     public function destroy(CommonFailure $commonFailure): RedirectResponse
     {
-        $this->commonFailures->delete($commonFailure);
+        $this->commonFailures->update($commonFailure, ['active' => false]);
 
-        return back()->with('success', 'Falla común eliminada del catálogo.');
+        return back()->with('success', 'Falla común desactivada.');
     }
 }

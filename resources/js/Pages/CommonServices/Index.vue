@@ -57,10 +57,19 @@ function cancelEdit() {
     form.reset();
 }
 
-function destroy(service) {
-    if (confirm(`¿Eliminar "${service.description}" del catálogo?`)) {
+function deactivate(service) {
+    if (confirm(`¿Desactivar "${service.description}"? Ya no aparecerá como opción en nuevas órdenes, pero se conserva en el historial.`)) {
         router.delete(route('common-services.destroy', service.id));
     }
+}
+
+function reactivate(service) {
+    router.put(route('common-services.update', service.id), {
+        description: service.description,
+        category: service.category,
+        suggested_price: service.suggested_price,
+        active: true,
+    });
 }
 </script>
 
@@ -96,8 +105,15 @@ function destroy(service) {
                                         <button @click="edit(service)" class="cursor-pointer font-medium text-primary-600 hover:text-primary-800">
                                             Editar
                                         </button>
-                                        <button @click="destroy(service)" class="cursor-pointer font-medium text-red-600 hover:text-red-800">
-                                            Eliminar
+                                        <button
+                                            v-if="service.active"
+                                            @click="deactivate(service)"
+                                            class="cursor-pointer font-medium text-red-600 hover:text-red-800"
+                                        >
+                                            Desactivar
+                                        </button>
+                                        <button v-else @click="reactivate(service)" class="cursor-pointer font-medium text-accent-600 hover:text-accent-800">
+                                            Reactivar
                                         </button>
                                     </div>
                                 </li>

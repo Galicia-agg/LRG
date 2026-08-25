@@ -47,7 +47,6 @@ class RoleSeeder extends Seeder
             'products.view',
             'sales.create',
             'sales.view',
-            'sales.void',
             'cash-sessions.manage',
             'orders.manage',
             'quotes.manage',
