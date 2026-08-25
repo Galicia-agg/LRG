@@ -77,7 +77,7 @@ function completeOrder(order) {
             <h2 class="text-lg font-semibold leading-tight text-slate-900">Pedidos online</h2>
         </template>
 
-        <div class="mx-auto max-w-6xl space-y-6 px-4 py-8 sm:px-6 lg:px-8">
+        <div class="mx-auto max-w-screen-2xl space-y-6 px-4 py-8 sm:px-6 lg:px-8">
             <div
                 v-if="!hasOpenCashSession"
                 class="flex items-center gap-3 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800"

@@ -63,7 +63,7 @@ function destroy(customer) {
             <h2 class="text-lg font-semibold leading-tight text-slate-900">Clientes</h2>
         </template>
 
-        <div class="mx-auto max-w-5xl px-4 py-8 sm:px-6 lg:px-8">
+        <div class="mx-auto max-w-screen-2xl px-4 py-8 sm:px-6 lg:px-8">
             <div class="grid gap-6 md:grid-cols-3">
                 <Card class="md:col-span-2">
                     <table class="min-w-full divide-y divide-slate-200">

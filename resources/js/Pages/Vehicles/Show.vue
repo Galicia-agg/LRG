@@ -88,7 +88,7 @@ function formatDate(iso) {
             <h2 class="text-lg font-semibold leading-tight text-slate-900">{{ vehicle.brand }} {{ vehicle.model }}</h2>
         </template>
 
-        <div class="mx-auto max-w-4xl space-y-6 px-4 py-8 sm:px-6 lg:px-8">
+        <div class="mx-auto max-w-screen-2xl space-y-6 px-4 py-8 sm:px-6 lg:px-8">
             <Link :href="route('vehicles.index')" class="text-sm font-medium text-primary-600 hover:text-primary-800">
                 ← Volver a vehículos
             </Link>

@@ -81,7 +81,7 @@ function reactivate(failure) {
             <h2 class="text-lg font-semibold leading-tight text-slate-900">Catálogo de fallas comunes</h2>
         </template>
 
-        <div class="mx-auto max-w-5xl px-4 py-8 sm:px-6 lg:px-8">
+        <div class="mx-auto max-w-screen-2xl px-4 py-8 sm:px-6 lg:px-8">
             <p class="mb-4 text-sm text-slate-500">
                 Estas fallas aparecen como sugerencias rápidas al reportar el problema o el diagnóstico de una orden de servicio.
             </p>

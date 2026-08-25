@@ -89,7 +89,7 @@ function formatDateTime(iso) {
             <h2 class="text-lg font-semibold leading-tight text-slate-900">Taller mecánico</h2>
         </template>
 
-        <div class="mx-auto max-w-6xl space-y-4 px-4 py-8 sm:px-6 lg:px-8">
+        <div class="mx-auto max-w-screen-2xl space-y-4 px-4 py-8 sm:px-6 lg:px-8">
             <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div class="flex flex-wrap gap-2">
                     <button

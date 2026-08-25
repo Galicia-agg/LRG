@@ -28,7 +28,7 @@ function daysUntil(dateStr) {
             <h2 class="text-lg font-semibold leading-tight text-slate-900">Alertas</h2>
         </template>
 
-        <div class="mx-auto max-w-5xl space-y-6 px-4 py-8 sm:px-6 lg:px-8">
+        <div class="mx-auto max-w-screen-2xl space-y-6 px-4 py-8 sm:px-6 lg:px-8">
             <!-- Stock bajo -->
             <div>
                 <div class="mb-2 flex items-center justify-between">

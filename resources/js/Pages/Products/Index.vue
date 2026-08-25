@@ -39,7 +39,7 @@ function destroy(product) {
             <h2 class="text-lg font-semibold leading-tight text-slate-900">Productos</h2>
         </template>
 
-        <div class="mx-auto max-w-7xl space-y-4 px-4 py-8 sm:px-6 lg:px-8">
+        <div class="mx-auto max-w-screen-2xl space-y-4 px-4 py-8 sm:px-6 lg:px-8">
             <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <form @submit.prevent="runSearch" class="flex w-full max-w-md gap-2">
                     <div class="relative flex-1">

@@ -193,7 +193,7 @@ function submitBilling() {
             </div>
         </template>
 
-        <div class="mx-auto max-w-5xl space-y-6 px-4 py-8 sm:px-6 lg:px-8">
+        <div class="mx-auto max-w-screen-2xl space-y-6 px-4 py-8 sm:px-6 lg:px-8">
             <div class="flex items-center justify-between">
                 <Link :href="route('workshop.index')" class="text-sm font-medium text-primary-600 hover:text-primary-800">
                     ← Volver a órdenes

@@ -34,7 +34,7 @@ const quickLinks = computed(() => allQuickLinks.filter((link) => canAny(link.per
             <h2 class="text-lg font-semibold leading-tight text-slate-900">Dashboard</h2>
         </template>
 
-        <div class="mx-auto max-w-7xl space-y-6 px-4 py-8 sm:px-6 lg:px-8">
+        <div class="mx-auto max-w-screen-2xl space-y-6 px-4 py-8 sm:px-6 lg:px-8">
             <!-- Stat cards -->
             <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
                 <Card padded>

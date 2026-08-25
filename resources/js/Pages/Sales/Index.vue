@@ -174,7 +174,7 @@ function formatDay(dateStr) {
             <h2 class="text-lg font-semibold leading-tight text-slate-900">Ventas</h2>
         </template>
 
-        <div class="mx-auto max-w-7xl space-y-6 px-4 py-8 sm:px-6 lg:px-8">
+        <div class="mx-auto max-w-screen-2xl space-y-6 px-4 py-8 sm:px-6 lg:px-8">
             <!-- Filters -->
             <Card padded>
                 <div class="flex flex-wrap gap-2">

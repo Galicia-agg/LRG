@@ -26,7 +26,7 @@ function formatDate(dateStr) {
             <h2 class="text-lg font-semibold leading-tight text-slate-900">Cotizaciones</h2>
         </template>
 
-        <div class="mx-auto max-w-5xl space-y-4 px-4 py-8 sm:px-6 lg:px-8">
+        <div class="mx-auto max-w-screen-2xl space-y-4 px-4 py-8 sm:px-6 lg:px-8">
             <div class="flex justify-end">
                 <Link
                     :href="route('quotes.create')"

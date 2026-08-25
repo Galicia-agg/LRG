@@ -25,7 +25,7 @@ function runSearch() {
             <h2 class="text-lg font-semibold leading-tight text-slate-900">Vehículos</h2>
         </template>
 
-        <div class="mx-auto max-w-5xl space-y-4 px-4 py-8 sm:px-6 lg:px-8">
+        <div class="mx-auto max-w-screen-2xl space-y-4 px-4 py-8 sm:px-6 lg:px-8">
             <form @submit.prevent="runSearch" class="flex max-w-md gap-2">
                 <div class="relative flex-1">
                     <span class="pointer-events-none absolute inset-y-0 left-3 flex items-center text-slate-400">
