@@ -11,6 +11,8 @@ services:
       - .env.production
     ports:
       - "${APP_PORT:-8090}:80"
+    volumes:
+      - aceitera-storage:/var/www/html/storage/app/public
     depends_on:
       pgsql:
         condition: service_healthy
@@ -57,4 +59,6 @@ volumes:
   aceitera-pgsql:
     driver: local
   aceitera-redis:
+    driver: local
+  aceitera-storage:
     driver: local
