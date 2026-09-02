@@ -16,8 +16,6 @@ services:
     depends_on:
       pgsql:
         condition: service_healthy
-      redis:
-        condition: service_healthy
     networks:
       - aceitera
 
@@ -38,27 +36,12 @@ services:
       timeout: 5s
       retries: 10
 
-  redis:
-    image: redis:alpine
-    restart: unless-stopped
-    volumes:
-      - aceitera-redis:/data
-    networks:
-      - aceitera
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 5s
-      timeout: 5s
-      retries: 10
-
 networks:
   aceitera:
     driver: bridge
 
 volumes:
   aceitera-pgsql:
-    driver: local
-  aceitera-redis:
     driver: local
   aceitera-storage:
     driver: local
