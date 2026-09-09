@@ -7,9 +7,8 @@ services:
       dockerfile: docker/php/Dockerfile
     image: aceitera-taller-php:1.0
     restart: unless-stopped
-    env_file:
-      - .env
     volumes:
+      - ./.env:/var/www/html/.env:ro
       - aceitera-public:/var/www/html/public
       - aceitera-storage:/var/www/html/storage/app/public
     depends_on:
