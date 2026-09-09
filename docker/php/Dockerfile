@@ -15,20 +15,14 @@ COPY . .
 COPY --from=vendor /app/vendor ./vendor
 RUN npm run build
 
-FROM php:8.4-apache AS app
+FROM php:8.4-fpm AS app
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
         libpq-dev \
         libzip-dev \
         unzip \
     && docker-php-ext-install pdo_pgsql zip \
-    && a2enmod rewrite \
     && rm -rf /var/lib/apt/lists/*
-
-ENV APACHE_DOCUMENT_ROOT=/var/www/html/public
-RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/sites-available/*.conf \
-    && sed -ri -e 's!/var/www/!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/apache2.conf \
-    && printf '<Directory /var/www/html/public>\n    AllowOverride All\n</Directory>\n' >> /etc/apache2/apache2.conf
 
 WORKDIR /var/www/html
 
@@ -41,7 +35,7 @@ RUN chown -R www-data:www-data storage bootstrap/cache \
 COPY docker/entrypoint.sh /usr/local/bin/entrypoint.sh
 RUN chmod +x /usr/local/bin/entrypoint.sh
 
-EXPOSE 80
+EXPOSE 9000
 
 ENTRYPOINT ["entrypoint.sh"]
-CMD ["apache2-foreground"]
+CMD ["php-fpm"]
