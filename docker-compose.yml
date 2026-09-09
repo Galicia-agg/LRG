@@ -5,12 +5,10 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    image: aceitera-taller:latest
+    image: aceitera-taller:1.0
     restart: unless-stopped
-    env_file:
-      - .env.production
     ports:
-      - "${APP_PORT:-8090}:80"
+      - "${APP_PORT:-5000}:80"
     volumes:
       - aceitera-storage:/var/www/html/storage/app/public
     depends_on:
