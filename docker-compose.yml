@@ -1,7 +1,7 @@
 name: aceitera-taller-prod
 
 services:
-  app:
+  app_aceitera:
     build:
       context: .
       dockerfile: Dockerfile
@@ -12,18 +12,20 @@ services:
     volumes:
       - aceitera-storage:/var/www/html/storage/app/public
     depends_on:
-      pgsql:
+      postgres_aceitera:
         condition: service_healthy
     networks:
       - aceitera
 
-  pgsql:
+  postgres_aceitera:
     image: postgres:18-alpine
     restart: unless-stopped
     environment:
       POSTGRES_DB: ${DB_DATABASE:-aceitera}
       POSTGRES_USER: ${DB_USERNAME:-aceitera}
       POSTGRES_PASSWORD: ${DB_PASSWORD:-change-me}
+    ports:
+      - "5435:5432"
     volumes:
       - aceitera-pgsql:/var/lib/postgresql
     networks:
