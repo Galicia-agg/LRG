@@ -26,7 +26,7 @@ class DatabaseSeeder extends Seeder
         ]);
         $admin->assignRole('admin');
 
-        $cajero = User::factory()->create([
+        $cajero = User::create([
             'name' => 'Cajero',
             'email' => 'cajero@aceitera.test',
             'password' => Hash::make('password'),
