@@ -11,6 +11,7 @@ use App\Repositories\Contracts\CustomerVehicleRepositoryInterface;
 use App\Repositories\Contracts\MechanicRepositoryInterface;
 use App\Repositories\Contracts\OrderRepositoryInterface;
 use App\Repositories\Contracts\ProductRepositoryInterface;
+use App\Repositories\Contracts\PurchaseRepositoryInterface;
 use App\Repositories\Contracts\QuoteRepositoryInterface;
 use App\Repositories\Contracts\SaleRepositoryInterface;
 use App\Repositories\Contracts\StockMovementRepositoryInterface;
@@ -25,6 +26,7 @@ use App\Repositories\Eloquent\CustomerVehicleRepository;
 use App\Repositories\Eloquent\MechanicRepository;
 use App\Repositories\Eloquent\OrderRepository;
 use App\Repositories\Eloquent\ProductRepository;
+use App\Repositories\Eloquent\PurchaseRepository;
 use App\Repositories\Eloquent\QuoteRepository;
 use App\Repositories\Eloquent\SaleRepository;
 use App\Repositories\Eloquent\StockMovementRepository;
@@ -47,6 +49,7 @@ class RepositoryServiceProvider extends ServiceProvider
         SaleRepositoryInterface::class => SaleRepository::class,
         OrderRepositoryInterface::class => OrderRepository::class,
         QuoteRepositoryInterface::class => QuoteRepository::class,
+        PurchaseRepositoryInterface::class => PurchaseRepository::class,
         CustomerVehicleRepositoryInterface::class => CustomerVehicleRepository::class,
         WorkOrderRepositoryInterface::class => WorkOrderRepository::class,
         MechanicRepositoryInterface::class => MechanicRepository::class,

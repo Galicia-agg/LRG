@@ -26,6 +26,7 @@ const allNavigation = [
     { name: 'Alertas', href: 'alerts.index', icon: 'bell', current: 'alerts.*', permissions: ['products.view', 'products.manage'] },
     { name: 'Categorías', href: 'categories.index', icon: 'tag', current: 'categories.*', permissions: ['categories.manage'] },
     { name: 'Proveedores', href: 'suppliers.index', icon: 'truck', current: 'suppliers.*', permissions: ['suppliers.manage'] },
+    { name: 'Compras', href: 'purchases.index', icon: 'inbox', current: 'purchases.*', permissions: ['purchases.manage'] },
     { name: 'Clientes', href: 'customers.index', icon: 'users', current: 'customers.*', permissions: ['customers.manage'] },
     { name: 'Configuración', href: 'settings.index', icon: 'gear', current: 'settings.*', permissions: ['settings.manage'] },
 ];

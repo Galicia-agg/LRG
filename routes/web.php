@@ -12,6 +12,7 @@ use App\Http\Controllers\MechanicController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\PurchaseController;
 use App\Http\Controllers\QuoteController;
 use App\Http\Controllers\SaleController;
 use App\Http\Controllers\SettingController;
@@ -88,6 +89,13 @@ Route::middleware('auth')->group(function () {
 
     Route::middleware('permission:suppliers.manage')->group(function () {
         Route::resource('suppliers', SupplierController::class)->only(['index', 'store', 'update', 'destroy']);
+    });
+
+    Route::middleware('permission:purchases.manage')->group(function () {
+        Route::get('/compras', [PurchaseController::class, 'index'])->name('purchases.index');
+        Route::get('/compras/nueva', [PurchaseController::class, 'create'])->name('purchases.create');
+        Route::post('/compras', [PurchaseController::class, 'store'])->name('purchases.store');
+        Route::get('/compras/{purchase}', [PurchaseController::class, 'show'])->name('purchases.show');
     });
 
     Route::middleware('permission:customers.manage')->group(function () {

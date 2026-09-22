@@ -20,6 +20,7 @@ class RoleSeeder extends Seeder
             'products.manage',
             'categories.manage',
             'suppliers.manage',
+            'purchases.manage',
             'customers.manage',
             'sales.create',
             'sales.view',
