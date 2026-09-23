@@ -65,9 +65,9 @@ function submitOrder() {
                 </Link>
             </div>
 
-            <div v-else class="grid grid-cols-1 gap-6 lg:grid-cols-3">
+            <div v-else class="grid grid-cols-1 gap-6 md:grid-cols-3">
                 <!-- Cart items: full detail -->
-                <div class="lg:col-span-2">
+                <div class="md:col-span-2">
                     <Card>
                         <ul class="divide-y divide-slate-100">
                             <li v-for="(line, index) in cart" :key="line.product_id" class="flex gap-4 p-4 sm:p-5">
@@ -122,7 +122,7 @@ function submitOrder() {
                 </div>
 
                 <!-- Order summary + checkout -->
-                <div class="lg:sticky lg:top-20 lg:h-fit">
+                <div class="md:sticky md:top-20 md:h-fit">
                     <Card padded>
                         <h2 class="text-sm font-semibold text-slate-900">Resumen del pedido</h2>
                         <div class="mt-3 space-y-1.5 text-sm">

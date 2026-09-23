@@ -117,9 +117,9 @@ function handleAddToCart(product) {
                 </div>
             </div>
 
-            <div class="grid grid-cols-1 gap-6 lg:grid-cols-4">
+            <div class="grid grid-cols-1 gap-6 md:grid-cols-3 lg:grid-cols-4">
                 <!-- Sidebar filters -->
-                <aside class="space-y-6 lg:col-span-1">
+                <aside class="space-y-6 md:col-span-1">
                     <div class="relative">
                         <span class="pointer-events-none absolute inset-y-0 left-3 flex items-center text-slate-400">
                             <Icon name="search" class="h-4 w-4" />
@@ -186,7 +186,7 @@ function handleAddToCart(product) {
                 </aside>
 
                 <!-- Products -->
-                <div class="lg:col-span-3">
+                <div class="md:col-span-2 lg:col-span-3">
                     <div class="mb-4 flex items-center justify-between gap-3">
                         <p class="text-sm text-slate-500">{{ filteredProducts.length }} producto(s)</p>
                         <select

@@ -15,6 +15,11 @@ const props = defineProps({
 const fromDate = ref(props.from);
 const toDate = ref(props.to);
 const expandedId = ref(null);
+const expandedInvoice = ref(null);
+
+function toggleInvoice(invoiceNumber) {
+    expandedInvoice.value = expandedInvoice.value === invoiceNumber ? null : invoiceNumber;
+}
 
 function toISODate(date) {
     return date.toLocaleDateString('sv-SE');
@@ -228,6 +233,7 @@ function formatDay(dateStr) {
                 <table class="min-w-full divide-y divide-slate-100 text-sm">
                     <thead v-if="(summary.byInvoice ?? []).length > 0">
                         <tr class="text-xs font-semibold uppercase tracking-wide text-slate-400">
+                            <th class="px-6 pb-2 pt-3"></th>
                             <th class="px-6 pb-2 pt-3 text-left">Factura</th>
                             <th class="px-6 pb-2 pt-3 text-left">Proveedor</th>
                             <th class="px-6 pb-2 pt-3 text-left">Registros</th>
@@ -235,24 +241,44 @@ function formatDay(dateStr) {
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-slate-100">
-                        <tr v-for="entry in summary.byInvoice" :key="entry.invoice_number">
-                            <td class="px-6 py-2.5 font-medium text-slate-900">{{ entry.invoice_number }}</td>
-                            <td class="px-6 py-2.5 text-slate-500">{{ entry.supplier }}</td>
-                            <td class="px-6 py-2.5">
-                                <span
-                                    v-if="entry.has_multiple_entries"
-                                    class="inline-flex items-center rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-800"
-                                >
-                                    {{ entry.entries }} registros — revisar
-                                </span>
-                                <span v-else class="text-slate-500">1 registro</span>
-                            </td>
-                            <td class="px-6 py-2.5 text-right font-medium text-slate-900">
-                                Q {{ Number(entry.total).toFixed(2) }}
-                            </td>
-                        </tr>
+                        <template v-for="entry in summary.byInvoice" :key="entry.invoice_number">
+                            <tr class="cursor-pointer hover:bg-slate-50" @click="toggleInvoice(entry.invoice_number)">
+                                <td class="px-6 py-2.5">
+                                    <Icon
+                                        name="dots"
+                                        class="h-4 w-4 rotate-90 text-slate-400 transition-transform"
+                                        :class="{ 'rotate-0': expandedInvoice === entry.invoice_number }"
+                                    />
+                                </td>
+                                <td class="px-6 py-2.5 font-medium text-slate-900">{{ entry.invoice_number }}</td>
+                                <td class="px-6 py-2.5 text-slate-500">{{ entry.supplier }}</td>
+                                <td class="px-6 py-2.5">
+                                    <span
+                                        v-if="entry.has_multiple_entries"
+                                        class="inline-flex items-center rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-800"
+                                    >
+                                        {{ entry.entries }} registros — revisar
+                                    </span>
+                                    <span v-else class="text-slate-500">1 registro</span>
+                                </td>
+                                <td class="px-6 py-2.5 text-right font-medium text-slate-900">
+                                    Q {{ Number(entry.total).toFixed(2) }}
+                                </td>
+                            </tr>
+                            <tr v-if="expandedInvoice === entry.invoice_number" class="bg-slate-50/60">
+                                <td colspan="5" class="px-6 py-4">
+                                    <table class="w-full max-w-lg text-xs text-slate-600">
+                                        <tr v-for="(item, idx) in entry.items" :key="idx">
+                                            <td class="py-1 pr-4">{{ item.name }}</td>
+                                            <td class="py-1 pr-4">{{ item.quantity }} x Q {{ item.unit_cost.toFixed(2) }}</td>
+                                            <td class="py-1 text-right font-medium">Q {{ item.subtotal.toFixed(2) }}</td>
+                                        </tr>
+                                    </table>
+                                </td>
+                            </tr>
+                        </template>
                         <tr v-if="(summary.byInvoice ?? []).length === 0">
-                            <td colspan="4" class="px-6 py-6 text-center text-slate-400">
+                            <td colspan="5" class="px-6 py-6 text-center text-slate-400">
                                 No hay compras con número de factura en este período.
                             </td>
                         </tr>

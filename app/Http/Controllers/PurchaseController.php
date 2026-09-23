@@ -188,6 +188,15 @@ class PurchaseController extends Controller
                 'total' => (float) $group->sum('total'),
                 'entries' => $group->count(),
                 'has_multiple_entries' => $group->count() > 1,
+                'items' => $group
+                    ->flatMap(fn (Purchase $purchase) => $purchase->items)
+                    ->map(fn ($item) => [
+                        'name' => $item->product?->name ?? 'Producto eliminado',
+                        'quantity' => (float) $item->quantity,
+                        'unit_cost' => (float) $item->unit_cost,
+                        'subtotal' => (float) $item->subtotal,
+                    ])
+                    ->values(),
             ])
             ->sortKeys()
             ->values();

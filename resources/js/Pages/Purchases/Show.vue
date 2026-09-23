@@ -29,15 +29,14 @@ function marginTone(margin) {
 
     <AuthenticatedLayout>
         <template #header>
-            <div class="flex items-center justify-between">
-                <h2 class="text-lg font-semibold leading-tight text-slate-900">Ingreso de mercancía #{{ purchase.id }}</h2>
-                <Link :href="route('purchases.index')" class="text-sm font-medium text-primary-600 hover:text-primary-800">
-                    Volver al listado
-                </Link>
-            </div>
+            <h2 class="text-lg font-semibold leading-tight text-slate-900">Ingreso de mercancía #{{ purchase.id }}</h2>
         </template>
 
         <div class="mx-auto max-w-5xl space-y-6 px-4 py-8 sm:px-6 lg:px-8">
+            <Link :href="route('purchases.index')" class="text-sm font-medium text-primary-600 hover:text-primary-800">
+                ← Volver al listado
+            </Link>
+
             <Card padded>
                 <div class="grid grid-cols-2 gap-4 text-sm sm:grid-cols-4">
                     <div>
